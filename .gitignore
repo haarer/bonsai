@@ -1,0 +1,57 @@
+# Android
+*.iml
+.gradle
+/local.properties
+/.idea/
+/build/
+/captures
+.externalNativeBuild
+.cxx
+
+# Backend
+__pycache__/
+*.pyc
+.env
+node_modules/
+dist/
+
+# General
+*.log
+.DS_Store
+
+# Gradle
+.gradle/
+build/
+gradle/wrapper/dists/
+
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+local.properties
+*.keystore
+*.jks
+captures/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Node/Python
+node_modules/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv/
+venv/
+
+# Secrets
+*.key
+*.pem
