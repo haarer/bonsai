@@ -1,4 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Receipt Ledger</string>
+
+    <string name="nav_scan">Scan</string>
+    <string name="nav_ledger">Ledger</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="enable_camera">Enable camera</string>
+    <string name="scan_permission_text">Camera permission is required to scan receipts.</string>
+    <string name="capture">Capture</string>
+
+    <string name="back">Back</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="review_new_receipt">New receipt</string>
+    <string name="review_receipt">Receipt</string>
+    <string name="delete_receipt">Delete receipt?</string>
+    <string name="delete_receipt_confirm">This permanently removes the receipt and its items.</string>
+
+    <string name="store_name">Store</string>
+    <string name="branch">Branch</string>
+    <string name="date">Date (yyyy-MM-dd)</string>
+    <string name="receipt_number">Receipt number</string>
+    <string name="currency">Currency</string>
+    <string name="items">Items</string>
+    <string name="item_name">Item</string>
+    <string name="quantity">Qty</string>
+    <string name="price">Unit price</string>
+    <string name="category">Category</string>
+    <string name="add_item">Add item</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="tax">Tax</string>
+    <string name="total">Total</string>
+
+    <string name="no_receipts">No receipts yet.\nScan a receipt to get started.</string>
+
+    <string name="section_sync">Sync</string>
+    <string name="server_url">Server URL</string>
+    <string name="server_url_hint">Base URL of the receipt ledger backend (on the emulator, use http://10.0.2.2:8000).</string>
 </resources>

@@ -1,59 +1,39 @@
-# Android
-*.iml
-.gradle
-/local.properties
-/.idea/
-/build/
-/captures
-.externalNativeBuild
-.cxx
-
-# Backend
-__pycache__/
-*.pyc
-.env
-node_modules/
-dist/
-
-# General
-*.log
-.DS_Store
-
 # Gradle
 .gradle/
 build/
+.kotlin/
+local.properties
 gradle/wrapper/dists/
 
 # Android
+*.iml
+.idea/
 *.apk
 *.aab
 *.ap_
 *.dex
-local.properties
+captures/
+.externalNativeBuild
+.cxx/
 *.keystore
 *.jks
-captures/
 
-# IDE
-.idea/
-*.iml
-.vscode/
-
-# OS
-Thumbs.db
-.DS_Store
-
-# Node/Python
-node_modules/
+# Backend (Python)
 __pycache__/
 *.py[cod]
 *.egg-info/
-.env
 .venv/
 venv/
+.env
 
-# Secrets
-*.key
-*.pem
-gradle/wrapper/*.zip
-gradle/wrapper/*.jar
+# Node
+node_modules/
+dist/
+
+# Logs
+*.log
+
+# IDE / OS
+.vscode/
+.DS_Store
+Thumbs.db
