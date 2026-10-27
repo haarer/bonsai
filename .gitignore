@@ -55,3 +55,5 @@ venv/
 # Secrets
 *.key
 *.pem
+gradle/wrapper/*.zip
+gradle/wrapper/*.jar
