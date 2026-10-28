@@ -29,7 +29,7 @@ fun SettingsScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = stringResource(R.string.section_sync),
+            text = stringResource(R.string.section_vision),
             style = MaterialTheme.typography.titleMedium,
         )
         OutlinedTextField(
@@ -42,6 +42,24 @@ fun SettingsScreen() {
         Text(
             text = stringResource(R.string.server_url_hint),
             style = MaterialTheme.typography.bodySmall,
+        )
+        OutlinedTextField(
+            value = settings.apiKey,
+            onValueChange = viewModel::onApiKeyChange,
+            label = { Text(stringResource(R.string.api_key)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            text = stringResource(R.string.api_key_hint),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        OutlinedTextField(
+            value = settings.model,
+            onValueChange = viewModel::onModelChange,
+            label = { Text(stringResource(R.string.model_name)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

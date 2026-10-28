@@ -11,6 +11,7 @@
         android:label="Receipt Ledger"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.ReceiptLedger">
         <activity
             android:name=".MainActivity"

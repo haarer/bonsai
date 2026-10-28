@@ -20,6 +20,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -56,6 +57,7 @@ fun ReviewScreen(
     val state by viewModel.state.collectAsState()
     val savedId by viewModel.savedId.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
+    val extractionStatus by viewModel.extractionStatus.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(savedId) {
@@ -108,6 +110,36 @@ fun ReviewScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                if (extractionStatus == ExtractionStatus.RUNNING || extractionStatus == ExtractionStatus.FAILED) {
+                    item(key = "extraction") {
+                        when (extractionStatus) {
+                            ExtractionStatus.RUNNING -> Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                LinearProgressIndicator(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = stringResource(R.string.extracting_receipt),
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                            ExtractionStatus.FAILED -> Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = state.errorMessage.ifEmpty { stringResource(R.string.extraction_failed) },
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                TextButton(onClick = viewModel::retryExtraction) {
+                                    Text(stringResource(R.string.retry))
+                                }
+                            }
+                            else -> {}
+                        }
+                    }
+                }
                 item {
                     OutlinedTextField(
                         value = state.storeName,

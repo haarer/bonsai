@@ -14,10 +14,12 @@ import kotlinx.coroutines.flow.map
 
 private val Context.appDataStore: DataStore<Preferences> by preferencesDataStore(name = "receipt-ledger")
 
-private const val DEFAULT_SERVER_URL = "http://10.0.2.2:8000"
+const val DEFAULT_MODEL = "qwen2.5-vl-3b"
 
 data class AppSettings(
-    val serverUrl: String = DEFAULT_SERVER_URL,
+    val serverUrl: String = "",
+    val apiKey: String = "",
+    val model: String = DEFAULT_MODEL,
 )
 
 @Singleton
@@ -27,15 +29,29 @@ class AppPreferences @Inject constructor(
 
     val settings: Flow<AppSettings> =
         context.appDataStore.data.map { prefs ->
-            AppSettings(serverUrl = prefs[Keys.SERVER_URL] ?: AppSettings().serverUrl)
+            AppSettings(
+                serverUrl = prefs[Keys.SERVER_URL].orEmpty(),
+                apiKey = prefs[Keys.API_KEY].orEmpty(),
+                model = prefs[Keys.MODEL] ?: DEFAULT_MODEL,
+            )
         }
 
     suspend fun setServerUrl(url: String) {
         context.appDataStore.edit { it[Keys.SERVER_URL] = url }
     }
 
+    suspend fun setApiKey(key: String) {
+        context.appDataStore.edit { it[Keys.API_KEY] = key }
+    }
+
+    suspend fun setModel(model: String) {
+        context.appDataStore.edit { it[Keys.MODEL] = model }
+    }
+
     private object Keys {
         val SERVER_URL = stringPreferencesKey("server_url")
+        val API_KEY = stringPreferencesKey("api_key")
+        val MODEL = stringPreferencesKey("model")
     }
 
 }

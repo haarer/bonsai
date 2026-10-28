@@ -23,4 +23,12 @@ class SettingsViewModel @Inject constructor(
     fun onServerUrlChange(url: String) {
         viewModelScope.launch { preferences.setServerUrl(url) }
     }
+
+    fun onApiKeyChange(key: String) {
+        viewModelScope.launch { preferences.setApiKey(key) }
+    }
+
+    fun onModelChange(model: String) {
+        viewModelScope.launch { preferences.setModel(model) }
+    }
 }

@@ -1,13 +1,18 @@
 package com.receiptedger.app.ui.review
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.receiptedger.app.domain.model.ExtractedReceipt
 import com.receiptedger.app.domain.model.LineItem
 import com.receiptedger.app.domain.model.Receipt
 import com.receiptedger.app.di.CapturedImageHolder
 import com.receiptedger.app.domain.model.ReceiptRepository
+import com.receiptedger.app.domain.model.VisionProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
+import java.io.IOException
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -40,8 +45,11 @@ data class ReviewState(
     val subtotalText: String = "",
     val taxText: String = "",
     val totalText: String = "",
+    val errorMessage: String = "",
     val createdAtMillis: Long = System.currentTimeMillis(),
 )
+
+enum class ExtractionStatus { IDLE, RUNNING, DONE, FAILED }
 
 /** Emitted once after save (positive id) or delete (negative id). */
 @HiltViewModel
@@ -49,6 +57,7 @@ class ReviewViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: ReceiptRepository,
     private val capturedImage: CapturedImageHolder,
+    private val vision: VisionProvider,
 ) : ViewModel() {
 
     private val receiptId: Long = savedStateHandle.get<Long>("receiptId") ?: 0L
@@ -65,6 +74,11 @@ class ReviewViewModel @Inject constructor(
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
+    private val _extractionStatus = MutableStateFlow(ExtractionStatus.IDLE)
+    val extractionStatus: StateFlow<ExtractionStatus> = _extractionStatus.asStateFlow()
+
+    private var currencyTouched = false
+
     init {
         if (receiptId != 0L) {
             viewModelScope.launch {
@@ -72,7 +86,32 @@ class ReviewViewModel @Inject constructor(
                     _state.value = receipt.toState(navImagePath ?: receipt.imagePath)
                 }
             }
+        } else {
+            navImagePath?.let { runExtraction(it) }
         }
+    }
+
+    private fun runExtraction(imagePath: String) {
+        _extractionStatus.value = ExtractionStatus.RUNNING
+        _state.update { it.copy(errorMessage = "") }
+        viewModelScope.launch {
+            try {
+                val file = File(imagePath)
+                if (!file.exists()) throw IOException("image file missing: $imagePath")
+                val extracted = vision.extract(file, null)
+                val touched = currencyTouched
+                _state.update { it.applyExtraction(extracted, touched) }
+                _extractionStatus.value = ExtractionStatus.DONE
+            } catch (e: Exception) {
+                Log.e("ReviewViewModel", "extraction failed", e)
+                _state.update { it.copy(errorMessage = e.message ?: e.javaClass.simpleName) }
+                _extractionStatus.value = ExtractionStatus.FAILED
+            }
+        }
+    }
+
+    fun retryExtraction() {
+        if (receiptId == 0L) navImagePath?.let { runExtraction(it) }
     }
 
     fun onStoreNameChange(value: String) = _state.update { it.copy(storeName = value) }
@@ -83,7 +122,10 @@ class ReviewViewModel @Inject constructor(
 
     fun onReceiptNumberChange(value: String) = _state.update { it.copy(receiptNumber = value) }
 
-    fun onCurrencyChange(value: String) = _state.update { it.copy(currency = value) }
+    fun onCurrencyChange(value: String) {
+        currencyTouched = true
+        _state.update { it.copy(currency = value) }
+    }
 
     fun onSubtotalChange(value: String) = _state.update { it.copy(subtotalText = value) }
 
@@ -144,6 +186,43 @@ class ReviewViewModel @Inject constructor(
             repository.deleteReceipt(receiptId)
             _savedId.value = -1L
         }
+    }
+
+    private companion object {
+        val ISO_DATE = Regex("^\\d{4}-\\d{2}-\\d{2}")
+        val GERMAN_DATE = Regex("^(\\d{1,2})[./](\\d{1,2})[./](\\d{4})$")
+    }
+
+    private fun normalizeDate(raw: String): String {
+        val s = raw.trim()
+        ISO_DATE.find(s)?.let { return s.take(10) }
+        GERMAN_DATE.find(s)?.let {
+            val (day, month, year) = it.destructured
+            return "${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}"
+        }
+        return s
+    }
+
+    private fun Double.displayText(): String = if (this == toLong().toDouble()) toLong().toString() else toString()
+
+    /** Pre-fills fields still at their defaults; never clobbers user input. */
+    private fun ReviewState.applyExtraction(e: ExtractedReceipt, currencyTouched: Boolean): ReviewState {
+        val date = normalizeDate(e.date)
+        return copy(
+            storeName = storeName.ifBlank { e.storeName },
+            branch = branch.ifBlank { e.branch },
+            dateText = dateText.ifBlank { date },
+            receiptNumber = receiptNumber.ifBlank { e.receiptNumber },
+            currency = if (e.currency.isNotBlank() && (!currencyTouched || currency == "EUR")) e.currency else currency,
+            items = if (items.isEmpty()) {
+                e.items.map { UiLineItem(it.name, it.quantity.displayText(), it.unitPrice.displayText(), it.category) }
+            } else {
+                items
+            },
+            subtotalText = subtotalText.ifBlank { e.subtotal?.toString().orEmpty() },
+            taxText = taxText.ifBlank { e.tax?.toString().orEmpty() },
+            totalText = totalText.ifBlank { e.total?.toString().orEmpty() },
+        )
     }
 
     private fun Receipt.toState(imagePath: String?): ReviewState = ReviewState(

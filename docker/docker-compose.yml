@@ -6,6 +6,10 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://user:pass@db:5432/receipts
+      # OpenAI-compatible upstream (llama.cpp / Ollama / hosted).
+      # Note: .local (mDNS) may not resolve inside the container — use the LAN IP if so.
+      - VISION_BASE_URL=http://schleppx.local:1235
+      - VISION_MODEL=qwen2.5-vl-3b-instruct
     depends_on:
       - db
   db:
